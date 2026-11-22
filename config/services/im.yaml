@@ -1,0 +1,38 @@
+# im-service 的本地业务配置。
+relationRpc:
+  # IM 服务需要关系服务判断私信权限和社交关系。
+  target: "127.0.0.1:40000"
+
+consumer:
+  # 消费互动事件生成通知，默认本地关闭。
+  enabled: false
+  queue: "im.interaction.queue"
+  consumerTag: "im-service"
+  prefetchCount: 10
+  bindings:
+    - "content.post.liked"
+    - "content.post.commented"
+    - "content.post.favorited"
+    - "content.post.blocked"
+    - "relation.user.followed"
+    - "relation.user.unfollowed"
+
+directMessage:
+  # 非互相关注用户的私信日限额。
+  nonMutualLimit: 3
+
+wuKong:
+  # 悟空 IM 网关与公开接入地址配置。
+  baseURL: "http://127.0.0.1:5001"
+  adminToken: ""
+  tokenUpdatePath: "/user/token/update"
+  routePath: "/route"
+  messageSendPath: "/message/send"
+  conversationClearUnreadPath: "/conversation/clearUnread"
+  publicTCPAddr: "127.0.0.1:5100"
+  publicWSAddr: "ws://127.0.0.1:5200"
+  publicWSSAddr: ""
+  routeIntranet: 1
+  systemUID: "system_interaction"
+  tokenTTL: "24h"
+  timeout: "10s"

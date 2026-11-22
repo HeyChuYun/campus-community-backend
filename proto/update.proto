@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package update;
+
+option go_package = "hfjj/backend/proto/updatepb";
+
+// UpdateService 负责应用版本查询与后台版本发布。
+service UpdateService {
+  // GetLatestVersion 返回指定平台当前可用的最新版本。
+  rpc GetLatestVersion(GetLatestVersionRequest) returns (GetLatestVersionResponse);
+
+  // ListAppVersions 返回后台查看用的版本列表。
+  rpc ListAppVersions(ListAppVersionsRequest) returns (ListAppVersionsResponse);
+
+  // UpsertAppVersion 创建或更新一条应用版本记录。
+  rpc UpsertAppVersion(UpsertAppVersionRequest) returns (UpsertAppVersionResponse);
+}
+
+// AppVersion 表示一条应用版本记录。
+message AppVersion {
+  int64 id = 1;
+  string version_name = 2;
+  int64 version_code = 3;
+  string platform = 4;
+  string download_url = 5;
+  string app_store_url = 6;
+  bool force_update = 7;
+  string min_supported_version = 8;
+  string update_log = 9;
+  bool is_active = 10;
+  string created_at = 11;
+}
+
+// GetLatestVersionRequest 表示查询最新版本请求。
+message GetLatestVersionRequest {
+  string current_version = 1;
+  string platform = 2;
+}
+
+// GetLatestVersionResponse 表示查询最新版本响应。
+message GetLatestVersionResponse {
+  AppVersion version = 1;
+}
+
+// ListAppVersionsRequest 表示后台版本列表请求。
+message ListAppVersionsRequest {
+  string platform = 1;
+  int64 limit = 2;
+}
+
+// ListAppVersionsResponse 表示后台版本列表响应。
+message ListAppVersionsResponse {
+  repeated AppVersion items = 1;
+}
+
+// UpsertAppVersionRequest 表示创建或更新版本请求。
+message UpsertAppVersionRequest {
+  string version_name = 1;
+  int64 version_code = 2;
+  string platform = 3;
+  string download_url = 4;
+  string app_store_url = 5;
+  bool force_update = 6;
+  string min_supported_version = 7;
+  string update_log = 8;
+  bool is_active = 9;
+  string created_by = 10;
+}
+
+// UpsertAppVersionResponse 表示创建或更新版本响应。
+message UpsertAppVersionResponse {
+  AppVersion version = 1;
+}

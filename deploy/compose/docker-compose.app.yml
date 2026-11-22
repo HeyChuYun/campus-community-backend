@@ -1,0 +1,119 @@
+name: hfjj-app
+
+x-common-env: &common-env
+  TZ: ${TZ}
+  APP_ENV: ${APP_ENV}
+  CONFIG_SOURCE: ${CONFIG_SOURCE}
+  ETCD_ENDPOINTS: ${ETCD_ENDPOINTS}
+  CONFIG_NAMESPACE: ${CONFIG_NAMESPACE}
+
+services:
+  gateway:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/gateway:${IMAGE_TAG}
+    container_name: hfjj-gateway
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: gateway
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: ${GATEWAY_PORT}
+    networks:
+      - hfjj
+
+  passport-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/passport-service:${IMAGE_TAG}
+    container_name: hfjj-passport-service
+    restart: unless-stopped
+    ports:
+      - "${PASSPORT_PORT}:${PASSPORT_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: passport-service
+      SERVICE_LISTEN: 0.0.0.0:${PASSPORT_PORT}
+    networks:
+      - hfjj
+
+  school-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/school-service:${IMAGE_TAG}
+    container_name: hfjj-school-service
+    restart: unless-stopped
+    ports:
+      - "${SCHOOL_PORT}:${SCHOOL_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: school-service
+      SERVICE_LISTEN: 0.0.0.0:${SCHOOL_PORT}
+    networks:
+      - hfjj
+
+  relation-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/relation-service:${IMAGE_TAG}
+    container_name: hfjj-relation-service
+    restart: unless-stopped
+    ports:
+      - "${RELATION_PORT}:${RELATION_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: relation-service
+      SERVICE_LISTEN: 0.0.0.0:${RELATION_PORT}
+    networks:
+      - hfjj
+
+  content-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/content-service:${IMAGE_TAG}
+    container_name: hfjj-content-service
+    restart: unless-stopped
+    ports:
+      - "${CONTENT_PORT}:${CONTENT_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: content-service
+      SERVICE_LISTEN: 0.0.0.0:${CONTENT_PORT}
+    networks:
+      - hfjj
+
+  im-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/im-service:${IMAGE_TAG}
+    container_name: hfjj-im-service
+    restart: unless-stopped
+    ports:
+      - "${IM_PORT}:${IM_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: im-service
+      SERVICE_LISTEN: 0.0.0.0:${IM_PORT}
+    networks:
+      - hfjj
+
+  captcha-solver-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/captcha-solver-service:${IMAGE_TAG}
+    container_name: hfjj-captcha-solver-service
+    restart: unless-stopped
+    ports:
+      - "${CAPTCHA_SOLVER_PORT}:${CAPTCHA_SOLVER_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: captcha-solver-service
+      SERVICE_LISTEN: 0.0.0.0:${CAPTCHA_SOLVER_PORT}
+    networks:
+      - hfjj
+
+  update-service:
+    image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/update-service:${IMAGE_TAG}
+    container_name: hfjj-update-service
+    restart: unless-stopped
+    ports:
+      - "${UPDATE_SERVICE_PORT}:${UPDATE_SERVICE_PORT}"
+    environment:
+      <<: *common-env
+      SERVICE_NAME: update-service
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: ${UPDATE_SERVICE_PORT}
+    networks:
+      - hfjj
+
+networks:
+  hfjj:
+    driver: bridge

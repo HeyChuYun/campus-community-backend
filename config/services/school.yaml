@@ -1,0 +1,41 @@
+﻿# school-service 的本地业务配置。
+appRedis:
+  # 校园侧临时状态和锁的 Redis 前缀。
+  key: "school:"
+
+security:
+  # 兼容旧字段保留，当前后端不再直接保存校园密码。
+  schoolPasswordKey: "CHANGE_ME_SCHOOL_PASSWORD_KEY"
+
+campus:
+  # 校园系统接入参数，包含 VPN、CAS、教务系统入口和登录算法相关字段。
+  vpnBaseURL: "https://vpn.example.edu:8443"
+  enlinkSSOLoginURL: "https://vpn.example.edu:8443/enlink/sso/login"
+  targetServiceURL: "http://campus.example.edu/sso/lyiotlogin"
+  casRoot: "https://vpn.example.edu:8443/https/webvpnc380013bd70394826ced621b793ef23ac8d91eada09f2baa26eec6b87634ed25/lyuapServer"
+  jwBaseURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912"
+  personalInfoURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/xsxxxggl/xsgrxxwh_cxXsgrxx.html?gnmkdm=N100801&layout=default"
+  scheduleIndexURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  scheduleDataURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151"
+  captchaFixedCode: ""
+  loginToken: "loginToken"
+  loginUserToken: "CHANGE_ME_LOGIN_USER_TOKEN"
+  RSAExponentHex: "010001"
+  RSAModulusHex: ""
+  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0"
+  insecureSkipVerify: false
+  timeout: "30s"
+
+captchaRpc:
+  # 校园验证码识别服务的本地 RPC 地址。
+  target: "127.0.0.1:61000"
+
+lifecycleJob:
+  # 校园账号生命周期巡检任务，默认本地关闭。
+  enabled: false
+  interval: "5m"
+  lockTTL: "1m"
+  startDelay: "3s"
+  lockKey: "school:lifecycle:lock"
+
+

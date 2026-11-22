@@ -1,0 +1,24 @@
+﻿# passport-service 的本地业务配置。
+appRedis:
+  # 独立的 Redis key 前缀，避免认证数据和其他缓存混用。
+  key: "passport:"
+
+geeTest:
+  # 本地默认关闭行为验证，线上按环境打开并注入真实密钥。
+  enabled: false
+  captchaID: ""
+  captchaKey: ""
+  validateURL: ""
+  timeoutMillis: 3000
+
+token:
+  # 访问令牌与刷新令牌的签发参数。
+  issuer: "hfjj-passport"
+  accessSecret: "change-me-access-secret"
+  accessExpireSeconds: 7200
+  refreshExpireSeconds: 2592000
+
+schoolRpc:
+  # 认证服务调用 school-service 的本地目标地址。
+  target: "127.0.0.1:30000"
+

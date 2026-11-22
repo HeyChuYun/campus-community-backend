@@ -1,0 +1,89 @@
+# gateway 生产业务配置。
+redis:
+  # 网关自身使用的 Redis key 前缀。
+  key: "gateway:"
+
+passportJwt:
+  # 网关签发访问令牌时使用的密钥。
+  # 生产环境必须替换为真实强密钥。
+  accessSecret: "CHANGE_ME"
+
+campusCredential:
+  # 校园授权凭证的加密主密钥与有效期。
+  masterKey: "CHANGE_ME"
+  tokenTTL: "2160h"
+
+mediaStorage:
+  # 生产媒体存储配置。
+  type: "minio"
+  # 对外访问媒体文件时使用的公开地址前缀。
+  publicURL: "https://cdn.example.com/hfjj-media"
+  minIO:
+    # MinIO 内网地址；如与网关在同一 Docker 网络，优先填容器服务名。
+    endpoint: "minio:9000"
+    accessKeyID: "CHANGE_ME"
+    secretAccessKey: "CHANGE_ME"
+    bucket: "hfjj-media"
+    useSSL: false
+    region: ""
+    objectPrefix: "media"
+    autoCreateBucket: false
+
+payment:
+  # 支付配置。
+  # 当前网关已经改为通过 gopay SDK 对接支付宝和微信支付。
+  # 外层业务逻辑、订单落库、支付回调后的会员发放仍然走项目自己的代码。
+  alipay:
+    # 支付宝应用 AppID。
+    appID: ""
+    # 支付宝应用私钥内容。
+    # 支持直接填 PEM 文本，也支持把换行写成 \n。
+    privateKey: ""
+    # 支付宝公钥内容，用于异步回调验签。
+    # 支持直接填 PEM 文本，也支持把换行写成 \n。
+    alipayPublicKey: ""
+    # 支付宝异步回调地址，必须是支付宝服务器可访问的公网 HTTPS 地址。
+    notifyURL: "https://api.example.com/api/v1/pay/alipay/notify"
+    # 支付完成后的同步跳转地址。
+    # App 支付通常可留空；如有 H5/页面支付场景再填写。
+    returnURL: ""
+    # 是否使用沙箱。
+    # 生产环境必须为 false。
+    sandbox: false
+  wechat:
+    # 微信开放平台应用 AppID。
+    appID: ""
+    # 微信支付商户号。
+    mchID: ""
+    # 微信支付 APIv3 密钥。
+    APIv3Key: ""
+    # 商户 API 证书序列号。
+    serialNo: ""
+    # 商户 API 私钥内容。
+    # 支持直接填 PEM 文本，也支持把换行写成 \n。
+    privateKey: ""
+    # 微信支付平台公钥内容。
+    # 用于回调验签，通常对应平台公钥而不是你自己的商户公钥。
+    platformPublicKey: ""
+    # 微信支付异步回调地址，必须是微信服务器可访问的公网 HTTPS 地址。
+    notifyURL: "https://api.example.com/api/v1/pay/wechat/notify"
+    # 是否使用沙箱。
+    # 当前微信 v3 正式接入通常为 false。
+    sandbox: false
+
+commercial:
+  # 商业化策略参数。
+  advertisement:
+    amountCents: 30000
+    durationDays: 30
+    firstAdAfterPosts: 7
+    nextAdMinPosts: 10
+    nextAdMaxPosts: 14
+    maxAdsPerPage: 1
+    maxAdsPer50Posts: 3
+    sameAdCooldownHours: 6
+    lightReductionAfter: 12
+    candidateCacheSecond: 30
+  membership:
+    # 留空时由代码内置默认会员策略接管。
+    policies: []

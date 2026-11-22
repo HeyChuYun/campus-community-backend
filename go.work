@@ -1,0 +1,14 @@
+go 1.26.2
+
+use (
+	./service/captcha-solver-service
+	./service/content-service
+	./service/gateway
+	./service/im-service
+	./service/passport-service
+	./pkg
+	./proto
+	./service/relation-service
+	./service/school-service
+	./service/update-service
+)

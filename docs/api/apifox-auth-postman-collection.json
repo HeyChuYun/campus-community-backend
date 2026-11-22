@@ -1,0 +1,363 @@
+{
+  "info": {
+    "_postman_id": "f11eb0a3-0bd0-4055-b99e-e0e2a0600a90",
+    "name": "HFJJ Gateway API",
+    "description": "Current gateway HTTP APIs for behavior verification config, school authorization, platform auth, profile query and admin role assignment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8080" },
+    { "key": "account", "value": "test_user" },
+    { "key": "password", "value": "platform-password" },
+    { "key": "nickname", "value": "测试用户" },
+    { "key": "studentNo", "value": "202304032023" },
+    { "key": "schoolPassword", "value": "your-school-password" },
+    { "key": "captchaCode", "value": "1234" },
+    { "key": "authSessionId", "value": "" },
+    { "key": "captchaImageBase64", "value": "" },
+    { "key": "schoolAuthTicket", "value": "" },
+    { "key": "studentName", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "deviceHeader", "value": "flutter/android-test" },
+    { "key": "captchaId", "value": "" },
+    { "key": "lotNumber", "value": "" },
+    { "key": "captchaOutput", "value": "" },
+    { "key": "passToken", "value": "" },
+    { "key": "genTime", "value": "" },
+    { "key": "targetUserId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "BehaviorVerify",
+      "item": [
+        {
+          "name": "Get Behavior Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  pm.collectionVariables.set('captchaId', body.data.captcha_id || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/behaviorConfig",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "behaviorConfig"]
+            },
+            "description": "获取登录/注册前端需要使用的极验公开配置。"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SchoolAuth",
+      "item": [
+        {
+          "name": "PreAuthorize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  pm.collectionVariables.set('authSessionId', body.data.auth_session_id || '');",
+                  "  pm.collectionVariables.set('captchaImageBase64', body.data.captcha_image_base64 || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/school/preAuthorize",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "school", "preAuthorize"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Authorize",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  pm.collectionVariables.set('schoolAuthTicket', body.data.school_auth_ticket || '');",
+                  "  pm.collectionVariables.set('studentNo', body.data.student_no || '');",
+                  "  pm.collectionVariables.set('studentName', body.data.student_name || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auth_session_id\": \"{{authSessionId}}\",\n  \"student_no\": \"{{studentNo}}\",\n  \"school_password\": \"{{schoolPassword}}\",\n  \"captcha_code\": \"{{captchaCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/school/authorize",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "school", "authorize"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  const user = body.data.user || {};",
+                  "  const tokens = body.data.tokens || {};",
+                  "  pm.collectionVariables.set('userId', String(user.user_id || ''));",
+                  "  pm.collectionVariables.set('accessToken', tokens.access_token || '');",
+                  "  pm.collectionVariables.set('refreshToken', tokens.refresh_token || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device", "value": "{{deviceHeader}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"{{account}}\",\n  \"password\": \"{{password}}\",\n  \"nickname\": \"{{nickname}}\",\n  \"school_auth_ticket\": \"{{schoolAuthTicket}}\",\n  \"behavior_verify\": {\n    \"lot_number\": \"{{lotNumber}}\",\n    \"captcha_output\": \"{{captchaOutput}}\",\n    \"pass_token\": \"{{passToken}}\",\n    \"gen_time\": \"{{genTime}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login By Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  const user = body.data.user || {};",
+                  "  const tokens = body.data.tokens || {};",
+                  "  pm.collectionVariables.set('userId', String(user.user_id || ''));",
+                  "  pm.collectionVariables.set('accessToken', tokens.access_token || '');",
+                  "  pm.collectionVariables.set('refreshToken', tokens.refresh_token || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device", "value": "{{deviceHeader}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"{{account}}\",\n  \"password\": \"{{password}}\",\n  \"behavior_verify\": {\n    \"lot_number\": \"{{lotNumber}}\",\n    \"captcha_output\": \"{{captchaOutput}}\",\n    \"pass_token\": \"{{passToken}}\",\n    \"gen_time\": \"{{genTime}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login By StudentNo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data) {",
+                  "  const user = body.data.user || {};",
+                  "  const tokens = body.data.tokens || {};",
+                  "  pm.collectionVariables.set('userId', String(user.user_id || ''));",
+                  "  pm.collectionVariables.set('accessToken', tokens.access_token || '');",
+                  "  pm.collectionVariables.set('refreshToken', tokens.refresh_token || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device", "value": "{{deviceHeader}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"{{studentNo}}\",\n  \"password\": \"{{password}}\",\n  \"behavior_verify\": {\n    \"lot_number\": \"{{lotNumber}}\",\n    \"captcha_output\": \"{{captchaOutput}}\",\n    \"pass_token\": \"{{passToken}}\",\n    \"gen_time\": \"{{genTime}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body && body.code === 0 && body.data && body.data.tokens) {",
+                  "  pm.collectionVariables.set('accessToken', body.data.tokens.access_token || '');",
+                  "  pm.collectionVariables.set('refreshToken', body.data.tokens.refresh_token || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "refresh"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Student Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/student/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "student", "profile"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Assign User Roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "X-Request-Timestamp", "value": "{{$timestamp}}" },
+              { "key": "X-Request-Nonce", "value": "{{$guid}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"target_user_id\": {{targetUserId}},\n  \"role_codes\": [\"admin\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "users", "roles"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

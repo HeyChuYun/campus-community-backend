@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package captcha;
+
+option go_package = "hfjj/backend/proto/captchapb";
+
+service CaptchaSolverService {
+  rpc SolveCaptcha(SolveCaptchaRequest) returns (SolveCaptchaResponse);
+}
+
+enum CaptchaCode {
+  CAPTCHA_CODE_OK = 0;
+  CAPTCHA_CODE_INVALID_ARGUMENT = 6001;
+  CAPTCHA_CODE_SOLVE_FAILED = 6002;
+  CAPTCHA_CODE_INTERNAL_ERROR = 6003;
+}
+
+message BaseResp {
+  CaptchaCode code = 1;
+  string message = 2;
+}
+
+message SolveCaptchaRequest {
+  string image_base64 = 1;
+}
+
+message SolveCaptchaResponse {
+  BaseResp base = 1;
+  string code = 2;
+  string expression = 3;
+}

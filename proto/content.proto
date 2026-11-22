@@ -1,0 +1,372 @@
+syntax = "proto3";
+
+package content;
+
+option go_package = "hfjj/backend/proto/contentpb";
+
+// ContentService 负责社区内容域，不负责登录、关系和 IM。
+service ContentService {
+  // 创建帖子。
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+
+  // 删除自己的帖子，或由管理员删除任意帖子。
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+
+  // 查询帖子详情。
+  rpc GetPost(GetPostRequest) returns (GetPostResponse);
+
+  // 获取关注流。
+  rpc GetFollowingFeed(GetFollowingFeedRequest) returns (GetFollowingFeedResponse);
+
+  // 获取推荐流。
+  rpc GetDiscoverFeed(GetDiscoverFeedRequest) returns (GetDiscoverFeedResponse);
+
+  // 获取指定用户的个人主页帖子列表。
+  rpc GetUserPosts(GetUserPostsRequest) returns (GetUserPostsResponse);
+
+  // 获取指定用户的内容统计，例如发帖数、获赞数。
+  rpc GetUserStats(GetUserStatsRequest) returns (GetUserStatsResponse);
+
+  // 创建评论。
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+
+  // 查询评论列表。
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+
+  // 删除评论。
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+
+  // 点赞帖子。
+  rpc LikePost(LikePostRequest) returns (LikePostResponse);
+
+  // 取消点赞帖子。
+  rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
+
+  // 收藏帖子。
+  rpc FavoritePost(FavoritePostRequest) returns (FavoritePostResponse);
+
+  // 取消收藏帖子。
+  rpc UnfavoritePost(UnfavoritePostRequest) returns (UnfavoritePostResponse);
+
+  // 搜索帖子。
+  rpc SearchPosts(SearchPostsRequest) returns (SearchPostsResponse);
+
+  // 搜索话题。
+  rpc SearchTopics(SearchTopicsRequest) returns (SearchTopicsResponse);
+
+  // 获取某个话题下的帖子列表。
+  rpc GetTopicPosts(GetTopicPostsRequest) returns (GetTopicPostsResponse);
+
+  // 获取热点话题。
+  rpc ListHotTopics(ListHotTopicsRequest) returns (ListHotTopicsResponse);
+
+  // 管理端执行帖子违规封禁。
+  rpc AdminBlockPost(AdminBlockPostRequest) returns (AdminBlockPostResponse);
+}
+
+// ContentCode 表示 content-service 对外返回的业务状态码。
+enum ContentCode {
+  CONTENT_CODE_OK = 0;
+  CONTENT_CODE_INVALID_ARGUMENT = 3001;
+  CONTENT_CODE_NOT_FOUND = 3002;
+  CONTENT_CODE_PERMISSION_DENIED = 3003;
+  CONTENT_CODE_CONFLICT = 3004;
+  CONTENT_CODE_INTERNAL_ERROR = 3005;
+}
+
+// PostStatus 表示帖子当前状态。
+enum PostStatus {
+  POST_STATUS_UNKNOWN = 0;
+  POST_STATUS_NORMAL = 1;
+  POST_STATUS_REVIEWING = 2;
+  POST_STATUS_BLOCKED = 3;
+  POST_STATUS_DELETED = 4;
+}
+
+// PostMediaType 表示帖子附件媒体类型。
+enum PostMediaType {
+  POST_MEDIA_TYPE_UNKNOWN = 0;
+  POST_MEDIA_TYPE_IMAGE = 1;
+  POST_MEDIA_TYPE_VIDEO = 2;
+  POST_MEDIA_TYPE_GIF = 3;
+}
+
+// PostVisibility 表示帖子可见性。
+enum PostVisibility {
+  POST_VISIBILITY_UNKNOWN = 0;
+  POST_VISIBILITY_PUBLIC = 1;
+  POST_VISIBILITY_FOLLOWERS_ONLY = 2;
+}
+
+// BaseResp 是 content-service 的统一响应状态结构。
+message BaseResp {
+  ContentCode code = 1;
+  string message = 2;
+}
+
+// PostMedia 表示帖子中的一个媒体资源。
+message PostMedia {
+  int64 media_id = 1;
+  PostMediaType media_type = 2;
+  string storage_key = 3;
+  string url = 4;
+  int64 width = 5;
+  int64 height = 6;
+  int64 duration_ms = 7;
+  int64 size_bytes = 8;
+  int64 sort_order = 9;
+}
+
+// PostItem 表示帖子核心信息。
+message PostItem {
+  int64 post_id = 1;
+  int64 author_user_id = 2;
+  string content_text = 3;
+  PostStatus status = 4;
+  PostVisibility visibility = 5;
+  int64 like_count = 6;
+  int64 comment_count = 7;
+  int64 favorite_count = 8;
+  repeated PostMedia media = 9;
+  string created_at = 10;
+  string updated_at = 11;
+  repeated string topics = 12;
+  string campus_code = 13;
+}
+
+// UserContentStats 表示某个用户在内容域下的统计快照。
+message UserContentStats {
+  int64 user_id = 1;
+  int64 post_count = 2;
+  int64 received_like_count = 3;
+}
+
+// CommentItem 表示评论核心信息。
+message CommentItem {
+  int64 comment_id = 1;
+  int64 post_id = 2;
+  int64 user_id = 3;
+  int64 reply_to_comment_id = 4;
+  int64 reply_to_user_id = 5;
+  string content = 6;
+  string created_at = 7;
+}
+
+// TopicItem 表示话题核心信息。
+message TopicItem {
+  int64 topic_id = 1;
+  string topic_name = 2;
+  string display_name = 3;
+  int64 post_count = 4;
+  double hot_score = 5;
+  string last_refreshed_at = 6;
+}
+
+message CreatePostRequest {
+  int64 operator_user_id = 1;
+  string content_text = 2;
+  PostVisibility visibility = 3;
+  repeated PostMedia media = 4;
+  string campus_code = 5;
+}
+
+message CreatePostResponse {
+  BaseResp base = 1;
+  PostItem post = 2;
+}
+
+message DeletePostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+  bool force_delete = 3;
+}
+
+message DeletePostResponse {
+  BaseResp base = 1;
+}
+
+message GetPostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+}
+
+message GetPostResponse {
+  BaseResp base = 1;
+  PostItem post = 2;
+}
+
+message GetFollowingFeedRequest {
+  int64 operator_user_id = 1;
+  int64 page = 2;
+  int64 page_size = 3;
+  string campus_code = 4;
+}
+
+message GetFollowingFeedResponse {
+  BaseResp base = 1;
+  repeated PostItem items = 2;
+  bool has_more = 3;
+}
+
+message GetDiscoverFeedRequest {
+  int64 operator_user_id = 1;
+  int64 page = 2;
+  int64 page_size = 3;
+  string campus_code = 4;
+}
+
+message GetDiscoverFeedResponse {
+  BaseResp base = 1;
+  repeated PostItem items = 2;
+  bool has_more = 3;
+}
+
+message GetUserPostsRequest {
+  int64 operator_user_id = 1;
+  int64 target_user_id = 2;
+  int64 page = 3;
+  int64 page_size = 4;
+}
+
+message GetUserPostsResponse {
+  BaseResp base = 1;
+  repeated PostItem items = 2;
+  bool has_more = 3;
+}
+
+message GetUserStatsRequest {
+  int64 target_user_id = 1;
+}
+
+message GetUserStatsResponse {
+  BaseResp base = 1;
+  UserContentStats stats = 2;
+}
+
+message CreateCommentRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+  int64 reply_to_comment_id = 3;
+  int64 reply_to_user_id = 4;
+  string content = 5;
+}
+
+message CreateCommentResponse {
+  BaseResp base = 1;
+  CommentItem comment = 2;
+}
+
+message ListCommentsRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+  int64 page = 3;
+  int64 page_size = 4;
+}
+
+message ListCommentsResponse {
+  BaseResp base = 1;
+  repeated CommentItem items = 2;
+  bool has_more = 3;
+}
+
+message DeleteCommentRequest {
+  int64 operator_user_id = 1;
+  int64 comment_id = 2;
+}
+
+message DeleteCommentResponse {
+  BaseResp base = 1;
+}
+
+message LikePostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+}
+
+message LikePostResponse {
+  BaseResp base = 1;
+}
+
+message UnlikePostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+}
+
+message UnlikePostResponse {
+  BaseResp base = 1;
+}
+
+message FavoritePostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+}
+
+message FavoritePostResponse {
+  BaseResp base = 1;
+}
+
+message UnfavoritePostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+}
+
+message UnfavoritePostResponse {
+  BaseResp base = 1;
+}
+
+message SearchPostsRequest {
+  int64 operator_user_id = 1;
+  string query = 2;
+  int64 page = 3;
+}
+
+message SearchPostsResponse {
+  BaseResp base = 1;
+  repeated PostItem items = 2;
+  bool has_more = 3;
+}
+
+message SearchTopicsRequest {
+  string query = 1;
+  int64 page = 2;
+}
+
+message SearchTopicsResponse {
+  BaseResp base = 1;
+  repeated TopicItem items = 2;
+  bool has_more = 3;
+}
+
+message GetTopicPostsRequest {
+  int64 operator_user_id = 1;
+  int64 topic_id = 2;
+  int64 page = 3;
+}
+
+message GetTopicPostsResponse {
+  BaseResp base = 1;
+  TopicItem topic = 2;
+  repeated PostItem items = 3;
+  bool has_more = 4;
+}
+
+message ListHotTopicsRequest {}
+
+message ListHotTopicsResponse {
+  BaseResp base = 1;
+  repeated TopicItem items = 2;
+}
+
+message AdminBlockPostRequest {
+  int64 operator_user_id = 1;
+  int64 post_id = 2;
+  repeated string categories = 3;
+  string reason = 4;
+  int64 mute_duration_seconds = 5;
+  string mute_scope = 6;
+}
+
+message AdminBlockPostResponse {
+  BaseResp base = 1;
+  PostItem post = 2;
+}

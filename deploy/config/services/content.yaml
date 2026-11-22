@@ -1,0 +1,44 @@
+# content-service 生产业务配置。
+appRedis:
+  # 内容服务 Redis key 前缀。
+  key: "content:"
+
+content:
+  # 发帖与媒体上传限制。
+  media:
+    maxImageCount: 4
+    maxSingleImageBytes: 5242880
+    maxVideoBytes: 62914560
+    maxGifBytes: 10485760
+  posts:
+    dailyPostLimit: 3
+  membership:
+    # 为空时由代码内置默认会员策略接管。
+    policies: []
+
+moderation:
+  # 内容审核配置。
+  enabled: false
+  provider: "baidu"
+  accessKey: ""
+  secretKey: ""
+  mediaBaseURL: "https://cdn.example.com/hfjj-media"
+  defaultMuteDuration: "30m"
+  retryInterval: "30s"
+  maxRetry: 20
+  pollBatchSize: 20
+  reviewQueue:
+    enabled: false
+    queue: "hfjj.content.review"
+    consumerTag: "content-review-consumer"
+    prefetchCount: 10
+    bindings: []
+  categoryRules: []
+
+outbox:
+  # 内容事件 outbox 配置。
+  enabled: true
+  pollInterval: "3s"
+  batchSize: 100
+  maxRetry: 20
+  retryBackoff: "10s"

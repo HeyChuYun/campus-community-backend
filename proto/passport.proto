@@ -1,0 +1,330 @@
+syntax = "proto3";
+
+package passport;
+
+option go_package = "hfjj/backend/proto/passportpb";
+
+// PassportService 负责平台账号注册、登录、双 token 签发、刷新、鉴权和 RBAC 授权。
+service PassportService {
+  // 使用平台注册信息和 school_auth_ticket 完成平台注册。
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // 使用平台账号或学号登录，并签发双 token。
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // 返回登录/注册页需要使用的行为验证公开配置。
+  rpc GetBehaviorVerifyConfig(GetBehaviorVerifyConfigRequest) returns (GetBehaviorVerifyConfigResponse);
+
+  // 校验 refresh_token 并轮换签发新的双 token。
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+
+  // 供 gateway 在请求入口校验 access_token。
+  rpc VerifyAccessToken(VerifyAccessTokenRequest) returns (VerifyAccessTokenResponse);
+
+  // 校验当前访问令牌是否具备指定权限。
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
+
+  // 获取当前登录用户的角色和权限快照。
+  rpc GetMyAuthorization(GetMyAuthorizationRequest) returns (GetMyAuthorizationResponse);
+
+  // 给指定用户分配角色。
+  rpc AssignUserRoles(AssignUserRolesRequest) returns (AssignUserRolesResponse);
+
+  // 查询指定用户当前拥有的角色。
+  rpc ListUserRoles(ListUserRolesRequest) returns (ListUserRolesResponse);
+
+  // 查询系统中的角色列表。
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+
+  // 查询系统中的权限点列表。
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+
+  // 更新当前登录用户的显示资料，例如昵称、简介、头像。
+  rpc UpdateMyProfile(UpdateMyProfileRequest) returns (UpdateMyProfileResponse);
+
+  // 修改当前登录用户的平台密码。
+  rpc ChangeMyPassword(ChangeMyPasswordRequest) returns (ChangeMyPasswordResponse);
+
+  // 供网关在完成校园授权校验后，按用户 ID 重置平台密码。
+  rpc ResetPasswordByUserID(ResetPasswordByUserIDRequest) returns (ResetPasswordByUserIDResponse);
+
+  // 主动退出登录，撤销当前 refresh_token。
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+// PassportCode 表示 passport-service 对外返回的业务状态码。
+enum PassportCode {
+  PASSPORT_CODE_OK = 0;
+  PASSPORT_CODE_INVALID_ARGUMENT = 1001;
+  PASSPORT_CODE_ACCOUNT_ALREADY_EXISTS = 1002;
+  PASSPORT_CODE_NICKNAME_ALREADY_EXISTS = 1003;
+  PASSPORT_CODE_INVALID_CREDENTIAL = 1004;
+  PASSPORT_CODE_ACCESS_TOKEN_INVALID = 1005;
+  PASSPORT_CODE_REFRESH_TOKEN_INVALID = 1006;
+  PASSPORT_CODE_ACCOUNT_UNAVAILABLE = 1007;
+  PASSPORT_CODE_REAUTH_REQUIRED = 1008;
+  PASSPORT_CODE_PERMISSION_DENIED = 1009;
+  PASSPORT_CODE_INTERNAL_ERROR = 1010;
+  PASSPORT_CODE_BEHAVIOR_VERIFY_FAILED = 1011;
+}
+
+// AccountStatus 表示平台账号当前状态。
+enum AccountStatus {
+  ACCOUNT_STATUS_UNKNOWN = 0;
+  ACCOUNT_STATUS_NORMAL = 1;
+  ACCOUNT_STATUS_READ_ONLY = 2;
+  ACCOUNT_STATUS_BLOCKED = 3;
+  ACCOUNT_STATUS_DEACTIVATED = 4;
+}
+
+// TokenType 表示令牌类型。
+enum TokenType {
+  TOKEN_TYPE_UNKNOWN = 0;
+  TOKEN_TYPE_ACCESS = 1;
+  TOKEN_TYPE_REFRESH = 2;
+}
+
+// BaseResp 是 passport-service 的统一响应状态结构。
+message BaseResp {
+  PassportCode code = 1;
+  string message = 2;
+}
+
+// UserProfile 表示平台侧用户核心信息。
+message UserProfile {
+  int64 user_id = 1;
+  string account = 2;
+  string nickname = 3;
+  string avatar_url = 4;
+  AccountStatus account_status = 5;
+  bool school_bound = 6;
+  string bio = 7;
+  string created_at = 8;
+  string cover_image_url = 9;
+}
+
+// TokenPair 表示 access_token 和 refresh_token。
+message TokenPair {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 access_token_expires_in_seconds = 3;
+  int64 refresh_token_expires_in_seconds = 4;
+}
+
+// RoleInfo 表示一个角色。
+message RoleInfo {
+  int64 role_id = 1;
+  string role_code = 2;
+  string role_name = 3;
+}
+
+// PermissionInfo 表示一个权限点。
+message PermissionInfo {
+  int64 permission_id = 1;
+  string permission_code = 2;
+  string permission_name = 3;
+  string module = 4;
+  string description = 5;
+}
+
+// AuthorizationSnapshot 表示当前用户的授权快照。
+message AuthorizationSnapshot {
+  UserProfile user = 1;
+  repeated RoleInfo roles = 2;
+  repeated PermissionInfo permissions = 3;
+}
+
+// BehaviorVerifyToken 表示客户端完成人机行为验证后提交的验证结果。
+message BehaviorVerifyToken {
+  string lot_number = 1;
+  string captcha_output = 2;
+  string pass_token = 3;
+  string gen_time = 4;
+}
+
+// BehaviorVerifyConfig 表示前端初始化行为验证所需的公开配置。
+message BehaviorVerifyConfig {
+  bool enabled = 1;
+  string provider = 2;
+  string captcha_id = 3;
+}
+
+// RegisterRequest 表示平台注册请求。
+message RegisterRequest {
+  string account = 1;
+  string password = 2;
+  string nickname = 3;
+  string school_auth_ticket = 4;
+  BehaviorVerifyToken behavior_verify = 5;
+}
+
+// RegisterResponse 表示平台注册响应。
+message RegisterResponse {
+  BaseResp base = 1;
+  UserProfile user = 2;
+  TokenPair tokens = 3;
+}
+
+// LoginRequest 表示平台登录请求。
+message LoginRequest {
+  string account = 1;
+  string password = 2;
+  BehaviorVerifyToken behavior_verify = 3;
+}
+
+// LoginResponse 表示平台登录响应。
+message LoginResponse {
+  BaseResp base = 1;
+  UserProfile user = 2;
+  TokenPair tokens = 3;
+}
+
+// GetBehaviorVerifyConfigRequest 表示获取行为验证公开配置的请求。
+message GetBehaviorVerifyConfigRequest {}
+
+// GetBehaviorVerifyConfigResponse 表示获取行为验证公开配置的响应。
+message GetBehaviorVerifyConfigResponse {
+  BaseResp base = 1;
+  BehaviorVerifyConfig config = 2;
+}
+
+// RefreshTokenRequest 表示刷新令牌请求。
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+// RefreshTokenResponse 表示刷新令牌响应。
+message RefreshTokenResponse {
+  BaseResp base = 1;
+  TokenPair tokens = 2;
+}
+
+// VerifyAccessTokenRequest 表示 access_token 校验请求。
+message VerifyAccessTokenRequest {
+  string access_token = 1;
+}
+
+// VerifyAccessTokenResponse 表示 access_token 校验响应。
+message VerifyAccessTokenResponse {
+  BaseResp base = 1;
+  bool valid = 2;
+  UserProfile user = 3;
+  TokenType token_type = 4;
+}
+
+// AuthorizeRequest 表示权限校验请求。
+message AuthorizeRequest {
+  string access_token = 1;
+  string permission_code = 2;
+  int64 resource_owner_user_id = 3;
+}
+
+// AuthorizeResponse 表示权限校验响应。
+message AuthorizeResponse {
+  BaseResp base = 1;
+  bool allowed = 2;
+  string deny_reason = 3;
+  AuthorizationSnapshot snapshot = 4;
+}
+
+// GetMyAuthorizationRequest 表示获取当前授权快照的请求。
+message GetMyAuthorizationRequest {
+  string access_token = 1;
+}
+
+// GetMyAuthorizationResponse 表示获取当前授权快照的响应。
+message GetMyAuthorizationResponse {
+  BaseResp base = 1;
+  AuthorizationSnapshot snapshot = 2;
+}
+
+// AssignUserRolesRequest 表示给用户分配角色的请求。
+message AssignUserRolesRequest {
+  string operator_access_token = 1;
+  int64 target_user_id = 2;
+  repeated string role_codes = 3;
+}
+
+// AssignUserRolesResponse 表示给用户分配角色的响应。
+message AssignUserRolesResponse {
+  BaseResp base = 1;
+  repeated RoleInfo roles = 2;
+}
+
+// ListUserRolesRequest 表示查询用户角色列表的请求。
+message ListUserRolesRequest {
+  int64 user_id = 1;
+}
+
+// ListUserRolesResponse 表示查询用户角色列表的响应。
+message ListUserRolesResponse {
+  BaseResp base = 1;
+  repeated RoleInfo roles = 2;
+}
+
+// ListRolesRequest 表示查询角色列表的请求。
+message ListRolesRequest {}
+
+// ListRolesResponse 表示查询角色列表的响应。
+message ListRolesResponse {
+  BaseResp base = 1;
+  repeated RoleInfo roles = 2;
+}
+
+// ListPermissionsRequest 表示查询权限列表的请求。
+message ListPermissionsRequest {
+  string module = 1;
+}
+
+// ListPermissionsResponse 表示查询权限列表的响应。
+message ListPermissionsResponse {
+  BaseResp base = 1;
+  repeated PermissionInfo permissions = 2;
+}
+
+// UpdateMyProfileRequest 表示当前登录用户编辑自己的资料请求。
+message UpdateMyProfileRequest {
+  string access_token = 1;
+  string nickname = 2;
+  string bio = 3;
+  string avatar_url = 4;
+  string cover_image_url = 5;
+}
+
+// UpdateMyProfileResponse 表示资料更新后的最新用户信息。
+message UpdateMyProfileResponse {
+  BaseResp base = 1;
+  UserProfile user = 2;
+}
+
+// ChangeMyPasswordRequest 表示当前登录用户修改平台密码请求。
+message ChangeMyPasswordRequest {
+  string access_token = 1;
+  string new_password = 2;
+}
+
+// ChangeMyPasswordResponse 表示修改平台密码响应。
+message ChangeMyPasswordResponse {
+  BaseResp base = 1;
+}
+
+// ResetPasswordByUserIDRequest 表示按用户 ID 重置平台密码请求。
+message ResetPasswordByUserIDRequest {
+  int64 user_id = 1;
+  string new_password = 2;
+}
+
+// ResetPasswordByUserIDResponse 表示按用户 ID 重置平台密码响应。
+message ResetPasswordByUserIDResponse {
+  BaseResp base = 1;
+}
+
+// LogoutRequest 表示退出登录请求。
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+// LogoutResponse 表示退出登录响应。
+message LogoutResponse {
+  BaseResp base = 1;
+}

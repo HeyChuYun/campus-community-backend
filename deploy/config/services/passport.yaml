@@ -1,0 +1,19 @@
+# passport-service 生产业务配置。
+appRedis:
+  # 认证服务 Redis key 前缀。
+  key: "passport:"
+
+geeTest:
+  # 行为验证配置。
+  enabled: false
+  captchaID: ""
+  captchaKey: ""
+  validateURL: ""
+  timeoutMillis: 3000
+
+token:
+  # 访问令牌与刷新令牌签发配置。
+  issuer: "hfjj-passport"
+  accessSecret: "CHANGE_ME"
+  accessExpireSeconds: 7200
+  refreshExpireSeconds: 2592000

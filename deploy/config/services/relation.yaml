@@ -1,0 +1,12 @@
+# relation-service 生产业务配置。
+appRedis:
+  # 关系服务 Redis key 前缀。
+  key: "relation:"
+
+outbox:
+  # 关系事件 outbox 配置。
+  enabled: true
+  pollInterval: "3s"
+  batchSize: 100
+  maxRetry: 20
+  retryBackoff: "10s"

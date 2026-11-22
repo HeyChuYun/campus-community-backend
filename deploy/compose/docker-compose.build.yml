@@ -1,0 +1,56 @@
+services:
+  gateway:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: gateway
+
+  passport-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: passport-service
+
+  school-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: school-service
+
+  relation-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: relation-service
+
+  content-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: content-service
+
+  im-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: im-service
+
+  captcha-solver-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: captcha-solver-service
+
+  update-service:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: update-service

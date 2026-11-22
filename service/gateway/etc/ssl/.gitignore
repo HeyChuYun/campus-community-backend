@@ -1,0 +1,8 @@
+# 忽略所有证书和私钥文件
+*.key
+*.crt
+*.csr
+*.pem
+
+# 保留README说明文件
+!README.md

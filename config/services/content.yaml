@@ -1,0 +1,48 @@
+# content-service 的本地业务配置。
+appRedis:
+  # 内容侧缓存、限流和临时状态使用的 Redis 前缀。
+  key: "content:"
+
+relationRpc:
+  # 内容服务依赖关系服务进行可见性和关系判断。
+  target: "127.0.0.1:40000"
+
+content:
+  # 发帖与媒体上传的业务限制。
+  media:
+    maxImageCount: 4
+    maxSingleImageBytes: 5242880
+    maxVideoBytes: 62914560
+    maxGifBytes: 10485760
+  posts:
+    dailyPostLimit: 3
+  # 会员策略本地可留空；空时由代码内置默认策略接管。
+  membership:
+    policies: []
+
+moderation:
+  # 内容审核默认本地关闭，生产环境通过 etcd 注入真实配置。
+  enabled: false
+  provider: "baidu"
+  accessKey: ""
+  secretKey: ""
+  mediaBaseURL: "http://127.0.0.1:9000/hfjj-media"
+  defaultMuteDuration: "30m"
+  retryInterval: "30s"
+  maxRetry: 20
+  pollBatchSize: 20
+  reviewQueue:
+    enabled: false
+    queue: "hfjj.content.review"
+    consumerTag: "content-review-consumer"
+    prefetchCount: 10
+    bindings:
+      - "content.post.created"
+
+outbox:
+  # 内容事件 outbox 默认关闭，需要异步事件链路时开启。
+  enabled: false
+  pollInterval: "3s"
+  batchSize: 100
+  maxRetry: 20
+  retryBackoff: "10s"

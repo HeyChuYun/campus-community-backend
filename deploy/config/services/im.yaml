@@ -1,0 +1,34 @@
+# im-service 生产业务配置。
+consumer:
+  # 互动消息消费者配置。
+  enabled: true
+  queue: "im.interaction.queue"
+  consumerTag: "im-service"
+  prefetchCount: 10
+  bindings:
+    - "content.post.liked"
+    - "content.post.commented"
+    - "content.post.favorited"
+    - "content.post.blocked"
+    - "relation.user.followed"
+    - "relation.user.unfollowed"
+
+directMessage:
+  # 非互关私信日限额。
+  nonMutualLimit: 3
+
+wuKong:
+  # 悟空 IM 配置。
+  baseURL: "http://wukongim-manager:5001"
+  adminToken: "CHANGE_ME"
+  tokenUpdatePath: "/user/token/update"
+  routePath: "/route"
+  messageSendPath: "/message/send"
+  conversationClearUnreadPath: "/conversation/clearUnread"
+  publicTCPAddr: "im.example.com:5100"
+  publicWSAddr: "ws://im.example.com:5200"
+  publicWSSAddr: "wss://im.example.com/ws"
+  routeIntranet: 1
+  systemUID: "system_interaction"
+  tokenTTL: "24h"
+  timeout: "10s"

@@ -1,0 +1,12 @@
+# relation-service 的本地业务配置。
+appRedis:
+  # 关系链计数、锁等场景使用的 Redis 前缀。
+  key: "relation:"
+
+outbox:
+  # 关系事件 outbox 默认关闭，联调事件流时再打开。
+  enabled: false
+  pollInterval: "3s"
+  batchSize: 100
+  maxRetry: 20
+  retryBackoff: "10s"

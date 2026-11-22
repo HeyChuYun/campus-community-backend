@@ -1,0 +1,28 @@
+﻿# 生产环境共享基础设施配置。
+# 该文件用于发布到 etcd，不直接挂载进容器。
+etcd:
+  # RPC 服务注册与发现使用的 etcd 集群。
+  endpoints:
+    - "127.0.0.1:2379"
+    - "127.0.0.1:2379"
+    - "127.0.0.1:2379"
+  namespace: "/hfjj/prod"
+
+postgres:
+  # 生产数据库连接串，发布前替换为真实值。
+  dsn: "postgres://hfjj_prod_user:CHANGE_ME@postgres:5432/hfjj_prod?sslmode=require&search_path=public"
+
+redis:
+  # 生产 Redis 地址，支持 go-zero RedisConf 结构。
+  host: "redis:6379"
+  type: "node"
+  pass: "CHANGE_ME"
+
+mq:
+  # 生产事件总线配置。
+  enabled: true
+  url: "amqp://hfjj:CHANGE_ME@rabbitmq:5672/"
+  exchange: "hfjj.biz.event"
+  exchangeType: "topic"
+  durable: true
+

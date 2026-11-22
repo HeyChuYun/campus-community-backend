@@ -1,0 +1,3 @@
+# update-service 当前没有额外业务配置。
+# 共享的 Postgres / Redis / Etcd 会从 shared.local.yaml 自动合并。
+{}

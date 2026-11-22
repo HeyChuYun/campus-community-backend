@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+package relation;
+
+option go_package = "hfjj/backend/proto/relationpb";
+
+// RelationService 负责人与人之间的关系域，不负责内容和私信消息本身。
+service RelationService {
+  // 关注指定用户。
+  rpc Follow(FollowRequest) returns (FollowResponse);
+
+  // 取消关注指定用户。
+  rpc Unfollow(UnfollowRequest) returns (UnfollowResponse);
+
+  // 拉黑指定用户。
+  rpc BlockUser(BlockUserRequest) returns (BlockUserResponse);
+
+  // 取消拉黑指定用户。
+  rpc UnblockUser(UnblockUserRequest) returns (UnblockUserResponse);
+
+  // 查询两个人之间的关系快照。
+  rpc GetRelation(GetRelationRequest) returns (GetRelationResponse);
+
+  // 批量查询当前用户和多个目标用户之间的关系快照。
+  rpc BatchGetRelation(BatchGetRelationRequest) returns (BatchGetRelationResponse);
+
+  // 查询当前用户关注列表。
+  rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
+
+  // 查询当前用户粉丝列表。
+  rpc ListFollowers(ListFollowersRequest) returns (ListFollowersResponse);
+
+  // 查询指定用户的关系计数快照。
+  rpc GetUserCounter(GetUserCounterRequest) returns (GetUserCounterResponse);
+}
+
+// RelationCode 表示 relation-service 对外返回的业务状态码。
+enum RelationCode {
+  RELATION_CODE_OK = 0;
+  RELATION_CODE_INVALID_ARGUMENT = 4001;
+  RELATION_CODE_NOT_FOUND = 4002;
+  RELATION_CODE_ALREADY_EXISTS = 4003;
+  RELATION_CODE_PERMISSION_DENIED = 4004;
+  RELATION_CODE_INTERNAL_ERROR = 4005;
+}
+
+// BaseResp 是 relation-service 的统一响应状态结构。
+message BaseResp {
+  RelationCode code = 1;
+  string message = 2;
+}
+
+// RelationSnapshot 表示当前用户和目标用户之间的关系快照。
+message RelationSnapshot {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+  bool is_following = 3;
+  bool is_followed_by = 4;
+  bool is_mutual_follow = 5;
+  bool is_friend = 6;
+  bool is_blocking = 7;
+  bool is_blocked_by = 8;
+}
+
+// UserCounter 表示某个用户的关系计数快照。
+message UserCounter {
+  int64 user_id = 1;
+  int64 following_count = 2;
+  int64 follower_count = 3;
+  int64 friend_count = 4;
+  int64 blocked_count = 5;
+}
+
+message FollowRequest {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message FollowResponse {
+  BaseResp base = 1;
+  RelationSnapshot snapshot = 2;
+  UserCounter actor_counter = 3;
+  UserCounter target_counter = 4;
+}
+
+message UnfollowRequest {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message UnfollowResponse {
+  BaseResp base = 1;
+  RelationSnapshot snapshot = 2;
+  UserCounter actor_counter = 3;
+  UserCounter target_counter = 4;
+}
+
+message BlockUserRequest {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message BlockUserResponse {
+  BaseResp base = 1;
+  RelationSnapshot snapshot = 2;
+  UserCounter actor_counter = 3;
+}
+
+message UnblockUserRequest {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message UnblockUserResponse {
+  BaseResp base = 1;
+  RelationSnapshot snapshot = 2;
+  UserCounter actor_counter = 3;
+}
+
+message GetRelationRequest {
+  int64 actor_user_id = 1;
+  int64 target_user_id = 2;
+}
+
+message GetRelationResponse {
+  BaseResp base = 1;
+  RelationSnapshot snapshot = 2;
+}
+
+message BatchGetRelationRequest {
+  int64 actor_user_id = 1;
+  repeated int64 target_user_ids = 2;
+}
+
+message BatchGetRelationResponse {
+  BaseResp base = 1;
+  repeated RelationSnapshot snapshots = 2;
+}
+
+message ListFollowingRequest {
+  int64 user_id = 1;
+  int64 page = 2;
+  int64 page_size = 3;
+}
+
+message RelatedUserItem {
+  int64 user_id = 1;
+  int64 related_user_id = 2;
+  string cursor = 3;
+}
+
+message ListFollowingResponse {
+  BaseResp base = 1;
+  repeated RelatedUserItem items = 2;
+  bool has_more = 3;
+}
+
+message ListFollowersRequest {
+  int64 user_id = 1;
+  int64 page = 2;
+  int64 page_size = 3;
+}
+
+message ListFollowersResponse {
+  BaseResp base = 1;
+  repeated RelatedUserItem items = 2;
+  bool has_more = 3;
+}
+
+message GetUserCounterRequest {
+  int64 user_id = 1;
+}
+
+message GetUserCounterResponse {
+  BaseResp base = 1;
+  UserCounter counter = 2;
+}

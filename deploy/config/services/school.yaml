@@ -1,0 +1,36 @@
+﻿# school-service 生产业务配置。
+appRedis:
+  # 校园服务 Redis key 前缀。
+  key: "school:"
+
+security:
+  # 兼容旧字段，发布前替换真实值。
+  schoolPasswordKey: "CHANGE_ME"
+
+campus:
+  # 校园系统接入参数。
+  vpnBaseURL: "https://vpn.example.edu:8443"
+  enlinkSSOLoginURL: "https://vpn.example.edu:8443/enlink/sso/login"
+  targetServiceURL: "http://campus.example.edu/sso/lyiotlogin"
+  casRoot: "https://vpn.example.edu:8443/https/webvpnc380013bd70394826ced621b793ef23ac8d91eada09f2baa26eec6b87634ed25/lyuapServer"
+  jwBaseURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912"
+  personalInfoURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/xsxxxggl/xsgrxxwh_cxXsgrxx.html?gnmkdm=N100801&layout=default"
+  scheduleIndexURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default"
+  scheduleDataURL: "https://vpn.example.edu:8443/http/webvpn1d1800074c8dbd59fe8bc5cfd2e64912/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151"
+  captchaFixedCode: ""
+  loginToken: "loginToken"
+  loginUserToken: "CHANGE_ME_LOGIN_USER_TOKEN"
+  RSAExponentHex: "010001"
+  RSAModulusHex: "00b5eeb166e069920e80bebd1fea4829d3d1f3216f2aabe79b6c47a3c18dcee5fd22c2e7ac519cab59198ece036dcf289ea8201e2a0b9ded307f8fb704136eaeb670286f5ad44e691005ba9ea5af04ada5367cd724b5a26fdb5120cc95b6431604bd219c6b7d83a6f8f24b43918ea988a76f93c333aa5a20991493d4eb1117e7b1"
+  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0"
+  insecureSkipVerify: false
+  timeout: "30s"
+
+lifecycleJob:
+  # 生命周期巡检任务配置。
+  enabled: true
+  interval: "5m"
+  lockTTL: "1m"
+  startDelay: "3s"
+  lockKey: "school:lifecycle:lock"
+

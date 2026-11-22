@@ -1,0 +1,319 @@
+syntax = "proto3";
+
+package im;
+
+option go_package = "hfjj/backend/proto/impb";
+
+// IMService 负责平台自己的 IM 业务规则、互动消息编排，以及对接 WuKongIM。
+service IMService {
+  // 为当前平台用户签发 WuKongIM 连接凭证。
+  rpc IssueConnectToken(IssueConnectTokenRequest) returns (IssueConnectTokenResponse);
+
+  // 查询当前用户的私信会话列表。
+  rpc ListDirectConversations(ListDirectConversationsRequest) returns (ListDirectConversationsResponse);
+
+  // 查询当前用户和指定对方之间的私信历史。
+  rpc ListDirectMessages(ListDirectMessagesRequest) returns (ListDirectMessagesResponse);
+
+  // 检查两个用户之间当前是否允许发送私信。
+  rpc CheckDirectMessagePermission(CheckDirectMessagePermissionRequest) returns (CheckDirectMessagePermissionResponse);
+
+  // 发送一条私信消息。
+  rpc SendDirectMessage(SendDirectMessageRequest) returns (SendDirectMessageResponse);
+
+  // 标记某个会话已读，主要用于同步 WuKongIM 会话未读状态。
+  rpc MarkConversationRead(MarkConversationReadRequest) returns (MarkConversationReadResponse);
+
+  // 查询互动消息列表。
+  rpc ListInteractionMessages(ListInteractionMessagesRequest) returns (ListInteractionMessagesResponse);
+
+  // 批量标记互动消息已读。
+  rpc MarkInteractionMessagesRead(MarkInteractionMessagesReadRequest) returns (MarkInteractionMessagesReadResponse);
+
+  // 查询系统通知列表。
+  rpc ListSystemNotifications(ListSystemNotificationsRequest) returns (ListSystemNotificationsResponse);
+
+  // 批量标记系统通知已读。
+  rpc MarkSystemNotificationsRead(MarkSystemNotificationsReadRequest) returns (MarkSystemNotificationsReadResponse);
+
+  // 创建系统通知，供管理端发送平台通知。
+  rpc CreateSystemNotification(CreateSystemNotificationRequest) returns (CreateSystemNotificationResponse);
+
+  // 获取用户的总未读消息数（私信+互动消息）。
+  rpc GetTotalUnreadCount(GetTotalUnreadCountRequest) returns (GetTotalUnreadCountResponse);
+}
+
+// IMCode 表示 im-service 的业务状态码。
+enum IMCode {
+  IM_CODE_OK = 0;
+  IM_CODE_INVALID_ARGUMENT = 5001;
+  IM_CODE_NOT_FOUND = 5002;
+  IM_CODE_PERMISSION_DENIED = 5003;
+  IM_CODE_CONFLICT = 5004;
+  IM_CODE_BLOCKED = 5005;
+  IM_CODE_DM_LIMIT_REACHED = 5006;
+  IM_CODE_READONLY_USER = 5007;
+  IM_CODE_UPSTREAM_ERROR = 5008;
+  IM_CODE_INTERNAL_ERROR = 5009;
+}
+
+// ConversationType 表示会话类型。
+enum ConversationType {
+  CONVERSATION_TYPE_UNKNOWN = 0;
+  CONVERSATION_TYPE_PERSONAL = 1;
+  CONVERSATION_TYPE_GROUP = 2;
+  CONVERSATION_TYPE_INTERACTION = 100;
+}
+
+// MessageBizType 表示平台自己的消息业务分类。
+enum MessageBizType {
+  MESSAGE_BIZ_TYPE_UNKNOWN = 0;
+  MESSAGE_BIZ_TYPE_DIRECT_MESSAGE = 1;
+  MESSAGE_BIZ_TYPE_INTERACTION = 2;
+}
+
+// InteractionEventType 表示互动消息来源事件类型。
+enum InteractionEventType {
+  INTERACTION_EVENT_TYPE_UNKNOWN = 0;
+  INTERACTION_EVENT_TYPE_POST_LIKED = 1;
+  INTERACTION_EVENT_TYPE_POST_COMMENTED = 2;
+  INTERACTION_EVENT_TYPE_POST_FAVORITED = 3;
+  INTERACTION_EVENT_TYPE_USER_FOLLOWED = 4;
+}
+
+// BaseResp 是 im-service 的统一响应状态结构。
+message BaseResp {
+  IMCode code = 1;
+  string message = 2;
+}
+
+// IMUserBinding 表示平台用户和 WuKongIM 用户的映射关系。
+message IMUserBinding {
+  int64 user_id = 1;
+  string im_uid = 2;
+  string status = 3;
+}
+
+// DirectMessagePermission 表示当前私信权限快照。
+message DirectMessagePermission {
+  bool allowed = 1;
+  bool is_mutual_follow = 2;
+  bool is_following = 3;
+  bool is_followed_by = 4;
+  bool is_blocking = 5;
+  bool is_blocked_by = 6;
+  int64 remaining_count = 7;
+  int64 total_limit = 8;
+  string deny_reason = 9;
+}
+
+// DirectMessageReceipt 表示私信消息下发结果。
+message DirectMessageReceipt {
+  int64 message_id = 1;
+  int64 message_seq = 2;
+  string client_msg_no = 3;
+  string channel_id = 4;
+  ConversationType conversation_type = 5;
+}
+
+// DirectConversationItem 表示一个私信会话的摘要信息。
+message DirectConversationItem {
+  int64 peer_user_id = 1;
+  string peer_account = 2;
+  string peer_nickname = 3;
+  string peer_avatar_url = 4;
+  string last_message_preview = 5;
+  int64 last_message_sender_user_id = 6;
+  string last_message_created_at = 7;
+  int64 unread_count = 8;
+}
+
+// DirectMessageItem 表示一条私信历史消息。
+message DirectMessageItem {
+  int64 sender_user_id = 1;
+  int64 receiver_user_id = 2;
+  string client_msg_no = 3;
+  string content_text = 4;
+  int64 message_id = 5;
+  int64 message_seq = 6;
+  string status = 7;
+  string created_at = 8;
+}
+
+// InteractionMessageItem 表示一条互动消息。
+message InteractionMessageItem {
+  int64 interaction_id = 1;
+  int64 user_id = 2;
+  InteractionEventType event_type = 3;
+  int64 operator_user_id = 4;
+  string operator_nickname = 5;
+  string operator_avatar_url = 6;
+  string title = 7;
+  string content = 8;
+  string resource_type = 9;
+  int64 resource_id = 10;
+  bool is_read = 11;
+  string created_at = 12;
+}
+
+// SystemNotificationItem 表示一条系统通知。
+message SystemNotificationItem {
+  int64 notification_id = 1;
+  int64 user_id = 2;
+  string notice_type = 3;
+  string title = 4;
+  string content = 5;
+  string resource_type = 6;
+  int64 resource_id = 7;
+  bool is_read = 8;
+  string created_at = 9;
+  string media_payload_json = 10;
+}
+
+message IssueConnectTokenRequest {
+  int64 user_id = 1;
+  string device_id = 2;
+  string device_fingerprint = 3;
+  int32 device_flag = 4;
+  int32 device_level = 5;
+}
+
+message IssueConnectTokenResponse {
+  BaseResp base = 1;
+  IMUserBinding binding = 2;
+  string connect_token = 3;
+  string tcp_addr = 4;
+  string ws_addr = 5;
+  string wss_addr = 6;
+}
+
+message ListDirectConversationsRequest {
+  int64 user_id = 1;
+  int64 page = 2;
+}
+
+message ListDirectConversationsResponse {
+  BaseResp base = 1;
+  repeated DirectConversationItem items = 2;
+  bool has_more = 3;
+}
+
+message ListDirectMessagesRequest {
+  int64 user_id = 1;
+  int64 peer_user_id = 2;
+  int64 page = 3;
+}
+
+message ListDirectMessagesResponse {
+  BaseResp base = 1;
+  repeated DirectMessageItem items = 2;
+  bool has_more = 3;
+}
+
+message CheckDirectMessagePermissionRequest {
+  int64 sender_user_id = 1;
+  int64 receiver_user_id = 2;
+}
+
+message CheckDirectMessagePermissionResponse {
+  BaseResp base = 1;
+  DirectMessagePermission permission = 2;
+}
+
+message SendDirectMessageRequest {
+  int64 sender_user_id = 1;
+  int64 receiver_user_id = 2;
+  string client_msg_no = 3;
+  string content_text = 4;
+  bytes payload = 5;
+}
+
+message SendDirectMessageResponse {
+  BaseResp base = 1;
+  DirectMessagePermission permission = 2;
+  DirectMessageReceipt receipt = 3;
+}
+
+message MarkConversationReadRequest {
+  int64 user_id = 1;
+  string channel_id = 2;
+  ConversationType conversation_type = 3;
+  int64 message_seq = 4;
+}
+
+message MarkConversationReadResponse {
+  BaseResp base = 1;
+}
+
+message ListInteractionMessagesRequest {
+  int64 user_id = 1;
+  int64 page = 2;
+}
+
+message ListInteractionMessagesResponse {
+  BaseResp base = 1;
+  repeated InteractionMessageItem items = 2;
+  bool has_more = 3;
+  int64 unread_count = 4;
+}
+
+message MarkInteractionMessagesReadRequest {
+  int64 user_id = 1;
+  repeated int64 interaction_ids = 2;
+}
+
+message MarkInteractionMessagesReadResponse {
+  BaseResp base = 1;
+  int64 unread_count = 2;
+}
+
+message ListSystemNotificationsRequest {
+  int64 user_id = 1;
+  int64 page = 2;
+}
+
+message ListSystemNotificationsResponse {
+  BaseResp base = 1;
+  repeated SystemNotificationItem items = 2;
+  bool has_more = 3;
+  int64 unread_count = 4;
+}
+
+message MarkSystemNotificationsReadRequest {
+  int64 user_id = 1;
+  repeated int64 notification_ids = 2;
+}
+
+message MarkSystemNotificationsReadResponse {
+  BaseResp base = 1;
+  int64 unread_count = 2;
+}
+
+message CreateSystemNotificationRequest {
+  int64 operator_user_id = 1;
+  string notice_type = 2;
+  string title = 3;
+  string content = 4;
+  string resource_type = 5;
+  int64 resource_id = 6;
+  string media_payload_json = 7;
+  bool send_to_all = 8;
+  repeated int64 target_user_ids = 9;
+}
+
+message CreateSystemNotificationResponse {
+  BaseResp base = 1;
+  int64 created_count = 2;
+}
+
+message GetTotalUnreadCountRequest {
+  int64 user_id = 1;
+}
+
+message GetTotalUnreadCountResponse {
+  BaseResp base = 1;
+  int64 direct_message_unread = 2;
+  int64 interaction_message_unread = 3;
+  int64 system_notification_unread = 4;
+  int64 total_unread = 5;
+}

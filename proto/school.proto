@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package school;
+
+option go_package = "hfjj/backend/proto/schoolpb";
+
+// SchoolService 只负责校园授权预处理、提交授权，以及把授权结果绑定到平台用户。
+service SchoolService {
+  // 预授权：建立校园会话并返回验证码图片。
+  rpc PreAuthorize(PreAuthorizeRequest) returns (PreAuthorizeResponse);
+
+  // 提交学号、校园密码和验证码，完成校园授权。
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
+
+  // 将一次临时校园授权结果正式绑定到平台 user_id。
+  rpc BindPlatformUser(BindPlatformUserRequest) returns (BindPlatformUserResponse);
+}
+
+// SchoolCode 表示 school-service 对外返回的业务状态码。
+enum SchoolCode {
+  SCHOOL_CODE_OK = 0;
+  SCHOOL_CODE_INVALID_CAPTCHA = 2001;
+  SCHOOL_CODE_INVALID_CREDENTIAL = 2002;
+  SCHOOL_CODE_SESSION_EXPIRED = 2003;
+  SCHOOL_CODE_REAUTH_REQUIRED = 2004;
+  SCHOOL_CODE_NOT_BOUND = 2005;
+  SCHOOL_CODE_AUTH_TICKET_INVALID = 2006;
+  SCHOOL_CODE_ALREADY_BOUND = 2007;
+  SCHOOL_CODE_REMOTE_ERROR = 2008;
+  SCHOOL_CODE_INTERNAL_ERROR = 2009;
+}
+
+// StudentStatus 表示学生当前学籍状态。
+enum StudentStatus {
+  STUDENT_STATUS_UNKNOWN = 0;
+  STUDENT_STATUS_IN_SCHOOL = 1;
+  STUDENT_STATUS_GRADUATED = 2;
+  STUDENT_STATUS_SUSPENDED = 3;
+}
+
+// BaseResp 是统一响应状态结构。
+message BaseResp {
+  SchoolCode code = 1;
+  string message = 2;
+}
+
+message PreAuthorizeRequest {}
+
+message PreAuthorizeResponse {
+  BaseResp base = 1;
+  string auth_session_id = 2;
+  string captcha_image_base64 = 3;
+}
+
+message AuthorizeRequest {
+  string auth_session_id = 1;
+  string student_no = 2;
+  string school_password = 3;
+  string captcha_code = 4;
+}
+
+message AuthorizeResponse {
+  BaseResp base = 1;
+  string school_auth_ticket = 2;
+  string student_no = 3;
+  string student_name = 4;
+  StudentStatus student_status = 5;
+  string campus_tgt = 6;
+}
+
+message BindPlatformUserRequest {
+  int64 user_id = 1;
+  string school_auth_ticket = 2;
+}
+
+message BindPlatformUserResponse {
+  BaseResp base = 1;
+  int64 user_id = 2;
+  string student_no = 3;
+}
